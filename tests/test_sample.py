@@ -1,5 +1,5 @@
-def func(x):
-    return x + 1
+def func():
+    return "hello"
 
 def test_answer():
-    assert func(3) == 5
+    assert func() == "hello"
