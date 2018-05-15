@@ -55,7 +55,13 @@ def main():
     settings = startup_routine()
     britta = start_britta(settings["britta"])
 
+    return [britta]
+
 
 
 if __name__ == '__main__':
-    main()
+    RUNNING_BOTS = main()
+
+    # For the time being, the catch-all killer:
+    for bot in RUNNING_BOTS:
+        bot.terminate()

@@ -17,7 +17,7 @@ TOKEN = sys.argv[1]
 
 @CLIENT.event
 async def on_message(message):
-    # we do not want the bot to reply to itself
+    """Event hook that triggers on message receival"""
     if message.author == CLIENT.user:
         return
 
@@ -27,6 +27,7 @@ async def on_message(message):
 
 @CLIENT.event
 async def on_typing(channel, person, when):
+    """Event hook that triggers on typing"""
     print(channel)
     print(person)
     print(when)
