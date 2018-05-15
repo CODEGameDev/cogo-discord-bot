@@ -33,14 +33,20 @@ def test_assign_client_in_test_env():
 def test_assign_client_in_prod_env():
     """tests the assign_client function of the controller while environment "test" is not set"""
     del sys.called_from_test
-    assert isinstance(cogo.controller.assign_client(), discord.Client)
+    client = cogo.controller.assign_client()
+    assert isinstance(client, discord.Client)
+    client.close()
 
     sys.called_from_test = True
 
 def main():
     """runs all tests for coverage checking"""
+    sys.called_from_test = True
     test_startup_routine()
     test_start_ina()
+    test_assign_client_in_prod_env()
+    test_assign_client_in_test_env()
+    del sys.called_from_test
 
 
 

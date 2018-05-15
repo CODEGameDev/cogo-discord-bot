@@ -6,6 +6,7 @@ class Client():
     """mock client class"""
     def __init__(self):
         self.user = ""
+        self.servers = ""
 
     def method_one(self):
         """method to satisfy linter"""
