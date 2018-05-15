@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""The Britta Bot will be in charge of greeting new members, and role
+"""The Ina Bot will be in charge of greeting new members, and role
 assignment
 Will be started by the controller"""
 

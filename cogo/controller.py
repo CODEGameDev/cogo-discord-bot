@@ -12,31 +12,30 @@ import discord
 
 def startup_routine():
     """startup routine, fetches token and env.
-    returns dict with {test_env, TOKEN_BRITTA, TOKEN_JONATHAN, TOKEN_INA}"""
+    returns dict with {test_env, TOKEN_INA, TOKEN_JONATHAN}"""
     env_path = Path('.') / '.env'
     load_dotenv(dotenv_path=env_path, verbose=True)
 
 
-    return {"britta": os.getenv("TOKEN_BRITTA"),
-            "jonathan": os.getenv("TOKEN_JONATHAN"),
-            "ina": os.getenv("TOKEN_INA")}
+    return {"ina": os.getenv("TOKEN_INA"),
+            "jonathan": os.getenv("TOKEN_JONATHAN")}
 
 
 def new_process(file_name, token):
     """starts a new python process, used to start the bots"""
     return subprocess.Popen([sys.executable, file_name, token])
 
-def start_britta(token=None):
-    """starts the britta process. Own function for validation.
+def start_ina(token=None):
+    """starts the ina process. Own function for validation.
     if no token is provided, because the function is started externally,
     it retrieves token from environment"""
 
     if token is None:
         env_path = Path('.') / '.env'
         load_dotenv(dotenv_path=env_path, verbose=True)
-        token = os.getenv("TOKEN_BRITTA")
+        token = os.getenv("TOKEN_INA")
 
-    return new_process("cogo/britta.py", token)
+    return new_process("cogo/ina.py", token)
 
 
 
@@ -53,9 +52,9 @@ def assign_client():
 def main():
     """main function, called when script is main"""
     settings = startup_routine()
-    britta = start_britta(settings["britta"])
+    ina = start_ina(settings["ina"])
 
-    return [britta]
+    return [ina]
 
 
 
