@@ -15,13 +15,13 @@ def test_startup_routine():
     """tests the startup_routine function of the controller"""
     results = cogo.controller.startup_routine()
 
-    assert results["britta"] != None
+    assert results["ina"] != None
     #assert results["jonathan"] != None <-- commented out until implementation
     #assert results["luka"] != None     <-- commented out until implementation
 
-def test_start_britta():
-    """tests the startup_britta function of the controller"""
-    process = cogo.controller.start_britta()
+def test_start_ina():
+    """tests the startup_ina function of the controller"""
+    process = cogo.controller.start_ina()
 
     assert process.poll() is None
     process.kill()
@@ -40,7 +40,7 @@ def test_assign_client_in_prod_env():
 def main():
     """runs all tests for coverage checking"""
     test_startup_routine()
-    test_start_britta()
+    test_start_ina()
 
 
 
