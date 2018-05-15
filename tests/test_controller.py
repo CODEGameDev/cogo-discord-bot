@@ -18,10 +18,20 @@ def test_startup_routine():
     #assert results["jonathan"] != None <-- commented out until implementation
     #assert results["luka"] != None     <-- commented out until implementation
 
+def test_start_britta():
+    """tests the startup_britta function of the controller"""
+    process = cogo.controller.start_britta("")
+
+    assert process
+
+    process.terminate()
+
 
 def main():
     """runs all tests for coverage checking"""
     test_startup_routine()
+
+
 
 if __name__ == '__main__':
     main()
