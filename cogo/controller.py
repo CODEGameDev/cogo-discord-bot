@@ -5,9 +5,9 @@ the controller will give out mock clients.
 """
 import os
 import sys
-from dotenv import load_dotenv
 from pathlib import Path
-import discord
+from dotenv import load_dotenv
+# import discord
 
 def startup_routine():
     """startup routine, fetches token and env"""
@@ -20,3 +20,13 @@ def startup_routine():
             "britta": os.getenv("TOKEN_BRITTA"),
             "jonathan": os.getenv("TOKEN_JONATHAN"),
             "luka": os.getenv("TOKEN_LUKA")}
+
+
+def main():
+    """main function, called when script is main"""
+    startup_routine()
+
+
+
+if __name__ == '__main__':
+    main()
