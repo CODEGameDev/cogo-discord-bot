@@ -8,7 +8,7 @@ import sys
 import subprocess
 from pathlib import Path
 from dotenv import load_dotenv
-# import discord
+import discord
 
 def startup_routine():
     """startup routine, fetches token and env.
@@ -16,23 +16,38 @@ def startup_routine():
     env_path = Path('.') / '.env'
     load_dotenv(dotenv_path=env_path, verbose=True)
 
-    test_flag = bool(hasattr(sys, 'called_from_test'))
 
-
-    return {"test": test_flag,
-            "britta": os.getenv("TOKEN_BRITTA"),
+    return {"britta": os.getenv("TOKEN_BRITTA"),
             "jonathan": os.getenv("TOKEN_JONATHAN"),
             "ina": os.getenv("TOKEN_INA")}
 
 
 def new_process(file_name, token):
     """starts a new python process, used to start the bots"""
-    return subprocess.Popen(['python', file_name, token])
+    return subprocess.Popen([sys.executable, file_name, token])
 
-def start_britta(token):
-    """starts the britta process. Own function for validation"""
-    return new_process("britta.py", token)
+def start_britta(token=None):
+    """starts the britta process. Own function for validation.
+    if no token is provided, because the function is started externally,
+    it retrieves token from environment"""
 
+    if token is None:
+        env_path = Path('.') / '.env'
+        load_dotenv(dotenv_path=env_path, verbose=True)
+        token = os.getenv("TOKEN_BRITTA")
+
+    return new_process("cogo/britta.py", token)
+
+
+
+def assign_client():
+    """Assigns a discord client, if executed in test it returns a mock
+    client"""
+    if hasattr(sys, 'called_from_test'):
+        from tests.mock.discord import Client
+        return Client()
+
+    return discord.Client()
 
 
 def main():

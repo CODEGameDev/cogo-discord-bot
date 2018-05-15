@@ -4,6 +4,7 @@
 
 import sys
 import os
+import time
 MY_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, MY_PATH + '/../')
 
@@ -13,19 +14,16 @@ def test_startup_routine():
     """tests the startup_routine function of the controller"""
     results = cogo.controller.startup_routine()
 
-    assert results["test"]
     assert results["britta"] != None
     #assert results["jonathan"] != None <-- commented out until implementation
     #assert results["luka"] != None     <-- commented out until implementation
 
 def test_start_britta():
     """tests the startup_britta function of the controller"""
-    process = cogo.controller.start_britta("")
+    process = cogo.controller.start_britta()
 
-    assert process
-
-    process.terminate()
-
+    assert process.poll() is None
+    process.kill()
 
 def main():
     """runs all tests for coverage checking"""

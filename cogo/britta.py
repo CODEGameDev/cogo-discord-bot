@@ -1,30 +1,37 @@
-import discord
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""The Britta Bot will be in charge of greeting new members, and role
+assignment
+Will be started by the controller"""
+
+
+import sys
 import os
-from dotenv import load_dotenv
-from pathlib import Path  # python3 only
+MY_PATH = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, MY_PATH + '/../')
 
-env_path = Path('.') / '.env'
-load_dotenv(dotenv_path=env_path, verbose=True)
+import cogo.controller #pylint: disable=C0413
 
-TOKEN = os.getenv("TOKEN_BRITTA")
+CLIENT = cogo.controller.assign_client()
+TOKEN = sys.argv[1]
 
-client = discord.Client()
-
-@client.event
+@CLIENT.event
 async def on_message(message):
     # we do not want the bot to reply to itself
-    if message.author == client.user:
+    if message.author == CLIENT.user:
         return
 
-    if message.content.startswith('!hello'):
+    if message.content.startswith(''):
         msg = 'Hello {0.author.mention}'.format(message)
-        await client.send_message(message.channel, msg)
+        await CLIENT.send_message(message.channel, msg)
 
-@client.event
-async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+@CLIENT.event
+async def on_typing(channel, person, when):
+    print(channel)
+    print(person)
+    print(when)
 
-client.run(TOKEN)
+    #msg = 'Hello {user.mention}, I C U typing :eyes:'.format()
+    #await CLIENT.send_message(message.channel, msg)
+
+CLIENT.run(TOKEN)
