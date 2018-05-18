@@ -22,7 +22,7 @@ class InaBot(BASE_CLASS):
     """docstring for InaBot. Will be started by the controller
     in test environments the class inherited here is a mock class"""
 
-    def __init__(self, token, server_id):
+    def __init__(self, server_id):
         super(InaBot, self).__init__()
         self._server_id = server_id
 
@@ -36,12 +36,9 @@ class InaBot(BASE_CLASS):
         self.data = None
         self.logging_buffer = ""
 
-        self.run(token)
-
     async def on_ready(self):
         """Startup Routine"""
-        self.server = self.get_server(self._server_id)
-        self.logging_buffer += InaBot.generate_connection_report(self.server)
+        self.get_instance_server()
 
         self.logging_channel = self.server.get_channel(os.getenv("LOGGING_CHANNEL_ID"))
         self.logging_buffer += InaBot.generate_channel_found_report("logging",
@@ -58,10 +55,15 @@ class InaBot(BASE_CLASS):
 
         await self.report_buffer()
 
-        self.start_loop("JSON", self.refresh_json_loop, 24)
-        self.start_loop("presence", self.presence_loop, 12)
+        self.start_loop("JSON", self.refresh_json_loop_wrapper, 24)
+        self.start_loop("presence", self.presence_loop_wrapper, 12)
 
         await self.report_buffer()
+
+    def get_instance_server(self):
+        """grabs the server and writes it to attributes"""
+        self.server = self.get_server(self._server_id)
+        self.logging_buffer += InaBot.generate_connection_report(self.server)
 
     def start_loop(self, name, task, time_in_hours):
         """Starts loop, accepts parameters:
@@ -73,29 +75,37 @@ class InaBot(BASE_CLASS):
         BASE_CLASS().loop.create_task(task(time_in_seconds))
         self.logging_buffer += InaBot.generate_loop_report(name, time_in_hours)
 
+    async def refresh_json_loop_wrapper(self, sleeptime):
+        """wraps the loop, for test purposes"""
+        while True:
+            await self.refresh_json_loop(sleeptime)
+
     async def refresh_json_loop(self, sleeptime):
         """Loop for refreshing the self.data attribute according to sleeptime"""
-        while True:
-            self.load_json()
-            if self.data:
-                await self.report("Successfully loaded/refreshed JSON.")
-            else:
-                await self.report("Error occured while loading JSON.")
-            await asyncio.sleep(sleeptime)
+        self.load_json()
+        if self.data:
+            await self.report("Successfully loaded/refreshed JSON.")
+        else:
+            await self.report("Error occured while loading JSON.")
+        await asyncio.sleep(sleeptime)
 
     def load_json(self):
         """opens the specified json file and reads the data into self.data"""
         with open('./cogo/data/ina.json') as json_file:
             self.data = json.load(json_file)
 
+    async def presence_loop_wrapper(self, sleeptime):
+        """wraps the loop, for test purposes"""
+        while True:
+            await self.presence_loop(sleeptime)
+
     async def presence_loop(self, sleeptime):
         """Loop for refreshing the presence of the bot in discord, according to sleeptime"""
-        while True:
-            game_list = self.data["data"]["games"]
-            rand_game = random.choice(game_list)
+        game_list = self.data["data"]["games"]
+        rand_game = random.choice(game_list)
 
-            await self.change_presence(game=GAME_CLASS(name=rand_game))
-            await asyncio.sleep(sleeptime)
+        await self.change_presence(game=GAME_CLASS(name=rand_game))
+        await asyncio.sleep(sleeptime)
 
     def acquire_channel(self, channel_id):
         """Getter of channels"""
@@ -104,25 +114,25 @@ class InaBot(BASE_CLASS):
 
         return None
 
-    async def report(self, formatless_report_txt):
+    async def report(self, formatless_report_string):
         """Formatless report, to be used for error logging or rare occurances"""
-        await self.send_message(self.logging_channel, formatless_report_txt)
+        await self.send_message(self.logging_channel, formatless_report_string)
 
     async def report_buffer(self):
         """Formated report, to be used when logging routines"""
         await self.send_message(self.logging_channel, self.logging_buffer)
         self.logging_buffer = ""
 
-    @classmethod
-    def generate_channel_found_report(cls, channel_purpose, channel_object):
+    @staticmethod
+    def generate_channel_found_report(channel_purpose, channel_object):
         """Returns a string, formatted channel found report"""
         if channel_object:
             return "Found {} channel: `{}`\n".format(channel_purpose, channel_object.name)
 
         return "WARNING: Could not find {} channel!\n".format(channel_purpose)
 
-    @classmethod
-    def generate_connection_report(cls, server):
+    @staticmethod
+    def generate_connection_report(server):
         """Returns a string, formatted connection report"""
 
         if server:
@@ -130,16 +140,16 @@ class InaBot(BASE_CLASS):
         else:
             raise ValueError("Bad ServerID")
 
-    @classmethod
-    def generate_loop_report(cls, loop_name, timer):
+    @staticmethod
+    def generate_loop_report(loop_name, timer):
         """Returns a string, formatted loop report"""
         return "Started {} loop\nRunning every {} hours\n".format(loop_name, timer)
 
-    @classmethod
-    def hours_to_seconds(cls, hours):
+    @staticmethod
+    def hours_to_seconds(hours):
         """Converst hours to seconds(int)"""
-        return hours * 60 * 60
+        return int(hours) * 60 * 60
 
-
-InaBot(token=sys.argv[1],
-       server_id=sys.argv[2])
+if __name__ == '__main__':
+    bot = InaBot(server_id=sys.argv[2])
+    bot.run(sys.argv[1])
