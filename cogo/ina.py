@@ -60,6 +60,16 @@ class InaBot(BASE_CLASS):
 
         await self.report_buffer()
 
+    async def on_member_join(self, new_member):
+        """Hook that gets called when a new member joins"""
+        await self.report("New Member joined: {}".format(new_member.name))
+        await self.send_greeting(new_member)
+        await self.send_greeting_per_pm(new_member)
+
+    async def on_member_remove(self, old_member):
+        """Hook that gets called when a member leaves"""
+        await self.report("Member left: {}".format(old_member.name))
+
     def get_instance_server(self):
         """grabs the server and writes it to attributes"""
         self.server = self.get_server(self._server_id)
@@ -122,6 +132,25 @@ class InaBot(BASE_CLASS):
         """Formated report, to be used when logging routines"""
         await self.send_message(self.logging_channel, self.logging_buffer)
         self.logging_buffer = ""
+
+    async def send_greeting(self, new_member):
+        """Sends a random greeting message to the designated greeting channel"""
+        rand_greeting = random.choice(self.data["data"]["greetings"])
+        await self.send_message(self.greetings_channel, rand_greeting.format(new_member.name))
+
+    async def send_greeting_per_pm(self, new_member):
+        """Sends a detailed greeting via pm to a new member"""
+        await self.send_pm(new_member, self.generate_pm_welcome())
+
+    async def send_pm(self, member, message):
+        """Sends a pm to a member"""
+        await self.send_message(member, message)
+
+
+    def generate_pm_welcome(self):
+        """returns the formatted welcome message"""
+        return self.data["data"]["pm_message"].format(self.server.name)
+
 
     @staticmethod
     def generate_channel_found_report(channel_purpose, channel_object):

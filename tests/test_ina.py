@@ -134,3 +134,57 @@ async def test_report_buffer():
     bot.logging_buffer = "HELLO WORLD"
     await bot.report_buffer()
     assert bot.logging_buffer == ""
+
+@pytest.mark.asyncio
+async def test_on_member_join():
+    bot = InaBot(1)
+    member = discord.Member(user={'name': "Steve", 'id': 1})
+    bot.get_instance_server()
+    bot.load_json()
+
+
+    await bot.on_member_join(member)
+
+@pytest.mark.asyncio
+async def test_on_member_remove():
+    bot = InaBot(1)
+    member = discord.Member(user={'name': "Steve", 'id': 1})
+
+    await bot.on_member_remove(member)
+
+
+def test_generate_pm_welcome():
+    bot = InaBot(1)
+    bot.get_instance_server()
+    bot.load_json()
+
+    results = bot.generate_pm_welcome()
+    expected_string = "Welcome to TestServer!"
+
+    assert results == expected_string
+
+@pytest.mark.asyncio
+async def test_send_greeting_per_pm():
+    bot = InaBot(1)
+    bot.load_json()
+    bot.get_instance_server()
+
+    member = discord.Member(user={'name': "Steve", 'id': 1})
+
+    await bot.send_greeting_per_pm(member)
+
+@pytest.mark.asyncio
+async def test_send_pm():
+    bot = InaBot(1)
+    message = "ROFL"
+
+    member = discord.Member(user={'name': "Steve", 'id': 1})
+    await bot.send_pm(member, message)
+
+@pytest.mark.asyncio
+async def test_send_greeting():
+    bot = InaBot(1)
+    bot.load_json()
+
+    member = discord.Member(user={'name': "Steve", 'id': 1})
+    await bot.send_greeting(member)

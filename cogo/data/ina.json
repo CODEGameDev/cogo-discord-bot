@@ -42,6 +42,7 @@
 			"Whoops, time to put on a smile, {} is here!",
 			"{} is Innocent",
 			"{} is Detective"
-		]
+		],
+		"pm_message": "Welcome to {}!"
 	}
 }
