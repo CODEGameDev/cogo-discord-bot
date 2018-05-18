@@ -17,15 +17,16 @@ def startup_routine():
     load_dotenv(dotenv_path=env_path, verbose=True)
 
 
-    return {"ina": os.getenv("TOKEN_INA"),
+    return {"server_id": os.getenv("SERVER_ID"),
+            "ina": os.getenv("TOKEN_INA"),
             "jonathan": os.getenv("TOKEN_JONATHAN")}
 
 
-def new_process(file_name, token):
+def new_process(file_name, token, server_id):
     """starts a new python process, used to start the bots"""
-    return subprocess.Popen([sys.executable, file_name, token])
+    return subprocess.Popen([sys.executable, file_name, token, server_id])
 
-def start_ina(token=None):
+def start_ina(token=None, server_id=None):
     """starts the ina process. Own function for validation.
     if no token is provided, because the function is started externally,
     it retrieves token from environment"""
@@ -35,7 +36,12 @@ def start_ina(token=None):
         load_dotenv(dotenv_path=env_path, verbose=True)
         token = os.getenv("TOKEN_INA")
 
-    return new_process("cogo/ina.py", token)
+    if server_id is None:
+        env_path = Path('.') / '.env'
+        load_dotenv(dotenv_path=env_path, verbose=True)
+        server_id = os.getenv("SERVER_ID")
+
+    return new_process("cogo/ina.py", token, server_id)
 
 
 
@@ -44,15 +50,23 @@ def assign_client():
     client"""
     if hasattr(sys, 'called_from_test'):
         from tests.mock.discord import Client
-        return Client()
+        return Client
 
-    return discord.Client()
+    return discord.Client
 
+def assign_game_object():
+    """Assigns a discord client, if executed in test it returns a mock
+    client"""
+    if hasattr(sys, 'called_from_test'):
+        from tests.mock.discord import Game
+        return Game
+
+    return discord.Game
 
 def main():
     """main function, called when script is main"""
     settings = startup_routine()
-    ina = start_ina(settings["ina"])
+    ina = start_ina(settings["ina"], settings["server_id"])
 
     return [ina]
 

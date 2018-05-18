@@ -14,3 +14,16 @@ class Client():
     def method_two(self):
         """method to satisfy linter"""
         pass
+
+
+class Game():
+    """mock game class"""
+    def __init__(self):
+        self.name = ""
+
+    def method_one(self):
+        """method to satisfy linter"""
+        pass
+    def method_two(self):
+        """method to satisfy linter"""
+        pass
