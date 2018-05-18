@@ -26,19 +26,20 @@ class InaBot(BASE_CLASS):
         super(InaBot, self).__init__()
         self._server_id = server_id
 
-        self.logging_buffer = ""
-
+        ###SERVER CONFIG###
         self.server = None
         self.greetings_channel = None
         self.logging_channel = None
         self.assignment_channel = None
 
+        ###RUNTIME DATA###
         self.data = None
-
+        self.logging_buffer = ""
 
         self.run(token)
 
     async def on_ready(self):
+        """Startup Routine"""
         self.server = self.get_server(self._server_id)
         self.logging_buffer += InaBot.generate_connection_report(self.server)
 
@@ -57,19 +58,23 @@ class InaBot(BASE_CLASS):
 
         await self.report_buffer()
 
-        refresh_loop_timer = InaBot.hours_to_seconds(24)
-        BASE_CLASS().loop.create_task(self.refresh_json_loop(refresh_loop_timer))
-        self.logging_buffer += InaBot.generate_loop_report("JSON", refresh_loop_timer)
-
-        game_change_timer = InaBot.hours_to_seconds(12)
-        BASE_CLASS().loop.create_task(self.presence_loop(game_change_timer))
-        self.logging_buffer += InaBot.generate_loop_report("presence", game_change_timer)
-
-
+        self.start_loop("JSON", self.refresh_json_loop, 24)
+        self.start_loop("presence", self.presence_loop, 12)
 
         await self.report_buffer()
 
+    def start_loop(self, name, task, time_in_hours):
+        """Starts loop, accepts parameters:
+                name=str // name is the purpose of the loop
+                task=func // task is the to-be-looped function
+                time_in_hours=int // repeat time in hours"""
+        time_in_seconds = InaBot.hours_to_seconds(time_in_hours)
+
+        BASE_CLASS().loop.create_task(task(time_in_seconds))
+        self.logging_buffer += InaBot.generate_loop_report(name, time_in_hours)
+
     async def refresh_json_loop(self, sleeptime):
+        """Loop for refreshing the self.data attribute according to sleeptime"""
         while True:
             self.load_json()
             if self.data:
@@ -78,7 +83,13 @@ class InaBot(BASE_CLASS):
                 await self.report("Error occured while loading JSON.")
             await asyncio.sleep(sleeptime)
 
+    def load_json(self):
+        """opens the specified json file and reads the data into self.data"""
+        with open('./cogo/data/ina.json') as json_file:
+            self.data = json.load(json_file)
+
     async def presence_loop(self, sleeptime):
+        """Loop for refreshing the presence of the bot in discord, according to sleeptime"""
         while True:
             game_list = self.data["data"]["games"]
             rand_game = random.choice(game_list)
@@ -87,29 +98,24 @@ class InaBot(BASE_CLASS):
             await asyncio.sleep(sleeptime)
 
     def acquire_channel(self, channel_id):
+        """Getter of channels"""
         if channel_id:
             return self.server.get_channel(channel_id)
 
         return None
 
-    def load_json(self):
-        #path = os.sys.argv[3]
-
-        #if path is None:
-        #    return
-
-        with open('./cogo/data/ina.json') as json_file:
-            self.data = json.load(json_file)
-
     async def report(self, formatless_report_txt):
+        """Formatless report, to be used for error logging or rare occurances"""
         await self.send_message(self.logging_channel, formatless_report_txt)
 
     async def report_buffer(self):
+        """Formated report, to be used when logging routines"""
         await self.send_message(self.logging_channel, self.logging_buffer)
         self.logging_buffer = ""
 
     @classmethod
     def generate_channel_found_report(cls, channel_purpose, channel_object):
+        """Returns a string, formatted channel found report"""
         if channel_object:
             return "Found {} channel: `{}`\n".format(channel_purpose, channel_object.name)
 
@@ -117,6 +123,8 @@ class InaBot(BASE_CLASS):
 
     @classmethod
     def generate_connection_report(cls, server):
+        """Returns a string, formatted connection report"""
+
         if server:
             return "Ina now online! Fully connected to {}.\n".format(server.name)
         else:
@@ -124,10 +132,12 @@ class InaBot(BASE_CLASS):
 
     @classmethod
     def generate_loop_report(cls, loop_name, timer):
-        return "Started {} loop\nRunning every {} seconds\n".format(loop_name, timer)
+        """Returns a string, formatted loop report"""
+        return "Started {} loop\nRunning every {} hours\n".format(loop_name, timer)
 
     @classmethod
     def hours_to_seconds(cls, hours):
+        """Converst hours to seconds(int)"""
         return hours * 60 * 60
 
 
