@@ -43,6 +43,23 @@ def start_ina(token=None, server_id=None):
 
     return new_process("cogo/ina.py", token, server_id)
 
+def start_jonathan(token=None, server_id=None):
+    """starts the jonathan process. Own function for validation.
+    if no token is provided, because the function is started externally,
+    it retrieves token from environment"""
+
+    if token is None:
+        env_path = Path('.') / '.env'
+        load_dotenv(dotenv_path=env_path, verbose=True)
+        token = os.getenv("TOKEN_JONATHAN")
+
+    if server_id is None:
+        env_path = Path('.') / '.env'
+        load_dotenv(dotenv_path=env_path, verbose=True)
+        server_id = os.getenv("SERVER_ID")
+
+    return new_process("cogo/jonathan.py", token, server_id)
+
 
 
 def assign_client():
@@ -67,6 +84,7 @@ def main():
     """main function, called when script is main"""
     settings = startup_routine()
     ina = start_ina(settings["ina"], settings["server_id"])
+    jonathan = start_jonathan(settings["jonathan"], settings["server_id"])
 
     return [ina]
 
