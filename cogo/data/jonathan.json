@@ -1,0 +1,15 @@
+{
+  "data": {
+    "USERS":{
+      "discordID":{"steamID":"123456789",
+        "games":["appID1","appId2"]}},
+        "GAMES":{
+          "appID":"RealName"},
+          "MESSAGES":{
+            "greetings": [
+            "Hey {} Maybe share your Steam Games with us. Type '.track YOUR_STEAM_PROFILE_LINK' ",
+            "What the heck is {} do you play? Type '.track YOUR_STEAM_PROFILE_LINK'",
+            "Are you a bot, too, {}? I think you are a bot... Not that I am one! So share your Steam Games with us! Type '.track YOUR_STEAM_PROFILE_LINK"]
+            }
+      }
+}
