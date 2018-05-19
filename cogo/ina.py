@@ -21,7 +21,6 @@ GAME_CLASS = cogo.controller.assign_game_object()
 class InaBot(BASE_CLASS):
     """docstring for InaBot. Will be started by the controller
     in test environments the class inherited here is a mock class"""
-
     def __init__(self, server_id):
         super(InaBot, self).__init__()
         self._server_id = server_id
@@ -69,6 +68,11 @@ class InaBot(BASE_CLASS):
     async def on_member_remove(self, old_member):
         """Hook that gets called when a member leaves"""
         await self.report("Member left: {}".format(old_member.name))
+
+    async def on_message(self, message):
+        """Hook that gets called on new message"""
+        if message.channel == self.assignment_channel and message.content.startswith("."):
+            await self.interpret_command(message)
 
     def get_instance_server(self):
         """grabs the server and writes it to attributes"""
@@ -124,6 +128,31 @@ class InaBot(BASE_CLASS):
 
         return None
 
+    async def interpret_command(self, message):
+        """interprets commands recieved by on_message"""
+        if message.content.startswith(".addrole"):
+            message_buffer = message.content.split(" ")
+            if len(message_buffer) > 1:
+                if self.valid_role(message_buffer[1]):
+                    await self.add_role_to_user(message.author, message_buffer[1])
+                else:
+                    await self.send_message(self.assignment_channel,
+                                            "{} not available!".format(message_buffer[1]))
+            else:
+                await self.send_message(self.assignment_channel, "Command too short!")
+
+        if message.content.startswith(".removerole"):
+            message_buffer = message.content.split(" ")
+            if len(message_buffer) > 1:
+                if self.valid_role(message_buffer[1]):
+                    await self.remove_role_from_user(message.author, message_buffer[1])
+                else:
+                    await self.send_message(self.assignment_channel,
+                                            "{} not available!".format(message_buffer[1]))
+            else:
+                await self.send_message(self.assignment_channel, "Command too short!")
+
+
     async def report(self, formatless_report_string):
         """Formatless report, to be used for error logging or rare occurances"""
         await self.send_message(self.logging_channel, formatless_report_string)
@@ -145,6 +174,30 @@ class InaBot(BASE_CLASS):
     async def send_pm(self, member, message):
         """Sends a pm to a member"""
         await self.send_message(member, message)
+
+    def valid_role(self, role):
+        """checks if a role is valid"""
+        return role in self.data["data"]["roles"]
+
+    async def add_role_to_user(self, member, role_name):
+        """adds a role to a member"""
+        for role in self.server.roles:
+            if role.name == role_name:
+                break
+        else:
+            role = None
+
+        await self.add_roles(member, role)
+
+    async def remove_role_from_user(self, member, role_name):
+        """removes a role from a user"""
+        for role in self.server.roles:
+            if role.name == role_name:
+                break
+        else:
+            role = None
+
+        await self.remove_roles(member, role)
 
 
     def generate_pm_welcome(self):
@@ -180,5 +233,5 @@ class InaBot(BASE_CLASS):
         return int(hours) * 60 * 60
 
 if __name__ == '__main__':
-    bot = InaBot(server_id=sys.argv[2])
-    bot.run(sys.argv[1])
+    BOT = InaBot(server_id=sys.argv[2])
+    BOT.run(sys.argv[1])

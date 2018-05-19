@@ -43,6 +43,7 @@
 			"{} is Innocent",
 			"{} is Detective"
 		],
-		"pm_message": "Welcome to {}!"
+		"pm_message": "Welcome to {}!",
+		"roles": ["CODERS", "CODE+DESIGN", "Friends"]
 	}
 }

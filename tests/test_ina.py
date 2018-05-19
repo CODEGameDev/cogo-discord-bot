@@ -10,12 +10,12 @@ import sys
 import os
 import discord
 import pytest
-import asyncio
 
 MY_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, MY_PATH + '/../')
 
 from cogo.ina import InaBot #pylint: disable=C0413
+from tests.mock.discord import *
 
 SERVER = discord.Server(id=1, name="TestServer")
 CHANNEL = discord.Channel(name="testing", server=SERVER)
@@ -188,3 +188,86 @@ async def test_send_greeting():
 
     member = discord.Member(user={'name': "Steve", 'id': 1})
     await bot.send_greeting(member)
+
+@pytest.mark.asyncio
+async def test_on_message_wrong_channel():
+    bot = InaBot(1)
+    member = Member("Steve", 1314)
+    message = Message(author=member,
+                      content="!addrole X",
+                      channel=Channel(name="wrong_channel", id=2))
+
+    await bot.on_message(message)
+
+    assert member == bot.get_member(member.id)
+
+
+@pytest.mark.asyncio
+async def test_on_message_wrong_message():
+    bot = InaBot(1)
+    member = Member(name="Steve", id=12423)
+    bot.assignment_channel = Channel(name="assignment_channel", id=1)
+    bot.get_instance_server()
+    message = Message(author=member,
+                      content="lolrofl",
+                      channel=bot.assignment_channel)
+
+    bot.get_instance_server()
+
+    await bot.on_message(message)
+
+    assert member == bot.get_member(member.id)
+
+@pytest.mark.asyncio
+async def test_on_message_illegal_role():
+    bot = InaBot(1)
+    member = Member(name="Steve", id=12423)
+    message = Message(author=member,
+                      content="!addrole admin",
+                      channel=Channel(name="wrong_channel", id=2))
+
+    await bot.on_message(message)
+
+    assert member == bot.get_member(member.id)
+
+
+
+@pytest.mark.asyncio
+async def test_on_message_add_role():
+    bot = InaBot(1)
+    bot.get_instance_server()
+    bot.assignment_channel = Channel(name="right_channel", id=1)
+    member = Member(name="Steve", id=12423)
+    message = Message(author=member,
+                      content=".addrole X",
+                      channel=bot.assignment_channel)
+    role = Role(id=12, name="X", server=bot.server)
+    bot.load_json()
+    bot.data["data"]["roles"].append(role.name)
+
+    await bot.on_message(message)
+
+
+    assert member == bot.get_member(member.id)
+    assert bot.get_member(member.id).role == [role]
+
+@pytest.mark.asyncio
+async def test_on_message_remove_role():
+    bot = InaBot(1)
+    bot.get_instance_server()
+    bot.assignment_channel = Channel(name="right_channel", id=1)
+    member = Member(name="Steve", id=12423)
+    role = Role(id=12, name="X", server=bot.server)
+
+    member.role = [role]
+    message = Message(author=member,
+                      content=".removerole X",
+                      channel=bot.assignment_channel)
+    bot.load_json()
+    bot.data["data"]["roles"].append(role.name)
+
+    await bot.on_message(message)
+
+
+    assert member == bot.get_member(member.id)
+    assert bot.get_member(member.id).role != [role]
